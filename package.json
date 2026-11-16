@@ -1,0 +1,27 @@
+{
+  "name": "squishhub",
+  "private": true,
+  "version": "1.2.0",
+  "type": "module",
+  "description": "SquishHub: the SquishEyez on-chain hub for WAX (web + Android)",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "android:sync": "vite build && cap sync android",
+    "android:build": "npm run android:sync && cd android && ./gradlew assembleDebug",
+    "android:open": "cap open android"
+  },
+  "dependencies": {
+    "@capacitor/android": "^8.6.0",
+    "@capacitor/core": "^8.6.0",
+    "@wharfkit/session": "^4.0.2",
+    "@wharfkit/wallet-plugin-anchor": "^4.0.2",
+    "@wharfkit/wallet-plugin-cloudwallet": "^4.0.2",
+    "@wharfkit/web-renderer": "^4.0.2"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^8.6.0",
+    "vite": "^5.4.0"
+  }
+}

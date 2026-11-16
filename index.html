@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#000000" />
+  <title>SquishHub</title>
+  <link rel="icon" type="image/png" href="icon-512.png">
+  <link rel="apple-touch-icon" href="icon-512.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap">
+  <style>
+    /* ===== Themes: phosphor green (default), amber, DOS blue, IBM grey ===== */
+    :root, .theme-green { --bg:#000; --panel:#020a04; --ink:#33ff66; --dim:#1f9e40; --hi:#aaffbb; --line:#1f9e40; --sel-bg:#33ff66; --sel-ink:#000; --warn:#ff5555; --glow:0 0 4px rgba(51,255,102,.55); }
+    .theme-amber { --bg:#000; --panel:#0a0600; --ink:#ffb000; --dim:#a87400; --hi:#ffd479; --line:#a87400; --sel-bg:#ffb000; --sel-ink:#000; --warn:#ff5555; --glow:0 0 4px rgba(255,176,0,.5); }
+    .theme-blue { --bg:#0000aa; --panel:#0000aa; --ink:#ffffff; --dim:#aaaaaa; --hi:#ffff55; --line:#aaaaaa; --sel-bg:#00aaaa; --sel-ink:#000; --warn:#ff5555; --glow:none; }
+    .theme-grey { --bg:#000; --panel:#0c0c0c; --ink:#cfcfcf; --dim:#7a7a7a; --hi:#ffffff; --line:#7a7a7a; --sel-bg:#cfcfcf; --sel-ink:#000; --warn:#ff5555; --glow:none; }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; background: var(--bg); color: var(--ink); }
+    body { font: 22px/1.25 'VT323', 'Courier New', monospace; text-shadow: var(--glow); padding-bottom: 64px; -webkit-text-size-adjust: 100%; }
+    a { color: var(--hi); }
+    ::selection { background: var(--sel-bg); color: var(--sel-ink); }
+    [hidden] { display: none !important; }
+
+    /* CRT scanlines + flicker (off in the blue/grey themes) */
+    .crt::after { content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 9998;
+      background: repeating-linear-gradient(rgba(0,0,0,0) 0 2px, rgba(0,0,0,.22) 2px 3px); }
+    .theme-blue.crt::after, .theme-grey.crt::after { opacity: .25; }
+    @media (prefers-reduced-motion: no-preference) { .theme-green .screen, .theme-amber .screen { animation: flicker 6s infinite; } }
+    @keyframes flicker { 0%, 97%, 100% { opacity: 1 } 98% { opacity: .93 } }
+
+    /* ===== Boot screen ===== */
+    #boot { position: fixed; inset: 0; z-index: 9999; background: #000; color: #c0c0c0; padding: 16px; font-size: 20px; text-shadow: none; cursor: pointer; overflow: hidden; }
+    #boot pre { margin: 0; white-space: pre-wrap; font: inherit; }
+    #boot .hint { position: absolute; bottom: 16px; left: 16px; right: 16px; animation: blink 1s steps(1) infinite; }
+
+    /* ===== Menu bar (DOS EDIT style) ===== */
+    .menubar { position: sticky; top: 0; z-index: 50; display: flex; flex-wrap: wrap; align-items: center; gap: 0 4px; background: var(--sel-bg); color: var(--sel-ink); text-shadow: none; padding: 2px 6px; }
+    .menubar .app { font-family: 'Press Start 2P', monospace; font-size: 10px; padding: 6px 8px 6px 2px; }
+    .menubar a { color: var(--sel-ink); text-decoration: none; padding: 2px 8px; white-space: nowrap; }
+    .menubar a .k { opacity: .65; }
+    .menubar a.active, .menubar a:focus-visible { background: var(--sel-ink); color: var(--sel-bg); outline: none; }
+    @media (max-width: 560px) {
+      .menubar { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
+      .menubar::-webkit-scrollbar { display: none; }
+      .menubar .app, .menubar .clock { display: none; }
+      .menubar .spacer { flex: 0 0 4px; }
+    }
+    .menubar .spacer { flex: 1; }
+    .menubar .clock { padding: 2px 4px; }
+    .menubar button.theme { width: auto; margin: 0; padding: 0 8px; border: 0; background: transparent; color: var(--sel-ink); font: inherit; box-shadow: none; text-shadow: none; }
+    .menubar button.theme::before, .menubar button.theme::after { content: none; }
+    .menubar > * { flex: 0 0 auto; white-space: nowrap; }
+    .menubar .spacer { flex: 1 1 auto; }
+
+    /* ===== Layout ===== */
+    .screen { max-width: 980px; margin: 0 auto; padding: 0 12px; }
+    .hero { text-align: center; padding: 22px 0 6px; }
+    .hero h1 { font-family: 'Press Start 2P', monospace; font-size: clamp(24px, 7vw, 44px); margin: 0; color: var(--hi); letter-spacing: 2px; }
+    .hero .prompt { margin-top: 10px; }
+    .cursor { display: inline-block; width: .6em; height: 1em; background: var(--ink); vertical-align: text-bottom; animation: blink 1s steps(1) infinite; }
+    @keyframes blink { 50% { opacity: 0 } }
+
+    /* ===== Windows: double-line box with the title on the top edge ===== */
+    section { position: relative; border: 4px double var(--line); background: var(--panel); padding: 22px 12px 12px; margin: 26px 0; }
+    .wintitle { position: absolute; top: -14px; left: 50%; transform: translateX(-50%); margin: 0; padding: 0 8px; background: var(--bg); color: var(--hi); font: 22px/1 'VT323', monospace; white-space: nowrap; max-width: calc(100% - 24px); overflow: hidden; text-overflow: ellipsis; }
+    .wintitle::before { content: "[ "; color: var(--dim); }
+    .wintitle::after { content: " ]"; color: var(--dim); }
+    .item { border: 1px solid var(--line); padding: 12px; margin: 10px 0; }
+    .info, .recipe, .meta { color: var(--ink); }
+    small { color: var(--dim); font-size: .9em; }
+    h3 { font: 26px/1.1 'VT323', monospace; color: var(--hi); margin: 0 0 6px; }
+    h4 { font: 20px/1.1 'VT323', monospace; color: var(--dim); margin: 16px 0 4px; text-transform: uppercase; }
+    h4::before { content: "── "; }
+    label { color: var(--dim); display: block; margin-top: 8px; }
+    details summary { cursor: pointer; color: var(--dim); }
+
+    /* ===== Controls ===== */
+    button, select, input, textarea { font: 22px/1.1 'VT323', monospace; color: var(--ink); background: var(--bg); border: 1px solid var(--line); padding: 8px 10px; margin: 6px 0; width: 100%; border-radius: 0; text-shadow: var(--glow); }
+    textarea { line-height: 1.2; }
+    input:focus, select:focus, textarea:focus { outline: 2px solid var(--hi); outline-offset: 0; }
+    button { cursor: pointer; text-transform: uppercase; }
+    button::before { content: "[ "; color: var(--dim); }
+    button::after { content: " ]"; color: var(--dim); }
+    button:focus-visible { background: var(--sel-bg); color: var(--sel-ink); text-shadow: none; outline: none; }
+    button:focus-visible::before, button:focus-visible::after { color: var(--sel-ink); }
+    button:active { background: var(--sel-bg); color: var(--sel-ink); text-shadow: none; }
+    /* Hover only where a pointer can hover: on touch screens it would stick after a tap */
+    @media (hover: hover) {
+      button:hover { background: var(--sel-bg); color: var(--sel-ink); text-shadow: none; }
+      button:hover::before, button:hover::after { color: var(--sel-ink); }
+        .wallet-btn.cloud:hover { background: #ffb000; color: #000; }
+      .menubar a:hover { background: var(--sel-ink); color: var(--sel-bg); }
+    }
+    button:disabled { opacity: .45; cursor: not-allowed; }
+    button.danger { color: var(--warn); border-color: var(--warn); }
+    button.small { width: auto; }
+    .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+    .row > * { flex: 1 1 140px; }
+
+    /* ===== Wallet box ===== */
+    .wallet { display: flex; flex-wrap: wrap; gap: 8px; }
+    .wallet button { flex: 1 1 220px; }
+    .wallet-btn.cloud { color: #ffb000; border-color: #ffb000; }
+    .wallet-btn.cloud:focus-visible, .wallet-btn.cloud:active { background: #ffb000; color: #000; }
+    .status { border: 1px solid var(--line); padding: 8px 10px; margin: 8px 0 0; }
+    .status.ok { color: var(--hi); }
+    .status.error, .result.error { color: var(--warn); border-color: var(--warn); }
+    .result { border: 1px dashed var(--line); padding: 8px 10px; margin-top: 8px; word-break: break-word; }
+    .result.ok { color: var(--hi); }
+
+    /* ===== Tags, thumbnails, grids ===== */
+    .tag { display: inline-block; border: 1px solid var(--line); padding: 0 6px; font-size: 18px; margin: 2px 2px 0 0; }
+    .tag.ready { background: var(--sel-bg); color: var(--sel-ink); text-shadow: none; }
+    .tag.staked { border-color: #ffb000; color: #ffb000; }
+    .token-chip { border: 1px solid var(--line); padding: 6px 10px; }
+    .thumbs { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; margin-bottom: 6px; }
+    .thumbs .arrow { color: var(--dim); }
+    img.thumb, .noimg-box.thumb { width: 56px; height: 56px; object-fit: cover; flex: 0 0 auto; border: 1px solid var(--line); }
+    .drop-head img, img.thumb, .card img, .pick img { background: var(--panel); image-rendering: pixelated; }
+    .noimg-box { display: flex; align-items: center; justify-content: center; color: var(--dim); aspect-ratio: 1; width: 100%; border: 1px dashed var(--line); }
+    img.noimg { visibility: hidden; }
+    .blend { border-bottom: 1px dashed var(--line); padding-bottom: 12px; margin-bottom: 12px; }
+    .blend:last-child { border-bottom: 0; margin-bottom: 0; }
+    .fuse-row { display: flex; gap: 8px; align-items: center; border-bottom: 1px dashed var(--line); padding: 8px 0; flex-wrap: wrap; }
+    .fuse-row .what { flex: 1 1 200px; }
+    .fuse-row button { flex: 0 0 auto; width: auto; }
+    .farm { border: 1px solid var(--line); padding: 12px; margin-bottom: 12px; }
+    .drop-head { display: flex; gap: 10px; align-items: flex-start; margin-bottom: 8px; }
+    .drop-head img, .drop-head .noimg-box { width: 84px; height: 84px; object-fit: cover; flex: 0 0 auto; }
+    .drop .qty { flex: 0 0 80px; }
+    .picker { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 6px; margin: 8px 0; max-height: 340px; overflow-y: auto; }
+    .pick { border: 1px solid var(--line); padding: 4px; font-size: 16px; text-align: center; cursor: pointer; word-break: break-all; }
+    .pick.on { background: var(--sel-bg); color: var(--sel-ink); text-shadow: none; }
+    .pick img, .card img { width: 100%; aspect-ratio: 1; object-fit: contain; display: block; }
+    .balances { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+    .balances span { border: 1px solid var(--line); padding: 8px; flex: 1 1 140px; text-align: center; color: var(--hi); }
+    .inv-controls { display: flex; gap: 6px; flex-wrap: wrap; }
+    .inv-controls select { flex: 1 1 160px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; margin-top: 10px; }
+    .card { border: 1px solid var(--line); padding: 6px; font-size: 18px; line-height: 1.15; }
+    .card .name { color: var(--hi); }
+    .card .tags { display: flex; flex-wrap: wrap; gap: 3px; margin-top: 4px; }
+
+    /* ===== Voting ===== */
+    .bar { height: 14px; border: 1px solid var(--line); margin: 2px 0 6px; }
+    .bar > span { display: block; height: 100%; background: var(--ink); }
+    .proposal .choice { margin: 6px 0; }
+    .proposal .choice button { width: auto; }
+
+    /* ===== Status line + command prompt (bottom, like DOS) ===== */
+    .statusbar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 60; background: var(--bg); border-top: 1px solid var(--line); padding: 4px 10px; }
+    .statusbar .out { color: var(--dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-height: 1.1em; }
+    .statusbar form { display: flex; align-items: center; gap: 4px; margin: 0; }
+    .statusbar .ps1 { white-space: nowrap; }
+    .statusbar input { border: 0; margin: 0; padding: 0; flex: 1; background: transparent; caret-color: var(--ink); }
+    .statusbar input:focus { outline: none; }
+    footer { text-align: center; padding: 18px 0 30px; color: var(--dim); font-size: 18px; }
+  </style>
+</head>
+<body class="crt theme-green">
+  <div id="boot" hidden aria-hidden="true"><pre id="bootText"></pre><div class="hint">Press any key or tap to continue_</div></div>
+
+  <nav class="menubar" id="tabs" aria-label="Pages">
+    <span class="app">SQUISHHUB</span>
+    <a href="#hub" data-page="hub"><span class="k">F1</span> Hub</a>
+    <a href="#drops" data-page="drops"><span class="k">F2</span> Drops</a>
+    <a href="#farms" data-page="farms"><span class="k">F3</span> Farms</a>
+    <a href="#vote" data-page="vote"><span class="k">F4</span> Vote</a>
+    <a href="#inventory" data-page="inventory"><span class="k">F5</span> Bag</a>
+    <span class="spacer"></span>
+    <button class="theme" id="themeBtn" type="button" title="Change colours">◐</button>
+    <span class="clock" id="clock"></span>
+  </nav>
+
+  <div class="screen">
+    <div class="hero">
+      <h1>SQUISHEYEZ</h1>
+      <div class="prompt">C:\SQUISH&gt; HUB.EXE <span class="cursor"></span></div>
+    </div>
+
+    <section>
+      <h2 class="wintitle">WALLET</h2>
+      <div class="wallet">
+        <button class="wallet-btn" id="connectAnchor">Connect Anchor</button>
+        <button class="wallet-btn cloud" id="connectCloud">Connect WAX Cloud Wallet</button>
+        <button class="wallet-btn" id="accountBtn" hidden></button>
+        <button class="wallet-btn secondary" id="logoutWallet" hidden>Log out</button>
+      </div>
+      <div id="wallet-status" class="status">Wallet not connected</div>
+    </section>
+
+      <!-- ===================== $SQUISH (every page) ===================== -->
+      <section id="squishBox">
+        <h2 class="wintitle">$SQUISH</h2>
+        <div id="squishStats">Reading the chain…</div>
+      </section>
+
+      <!-- ===================== VOTE PAGE ===================== -->
+      <div class="page" id="page-vote" hidden>
+        <section>
+          <h2 class="wintitle">SQUISHDAO VOTING</h2>
+          <p class="info">Every OG and Season 2 SquishEyez you hold is one vote. Nothing is staked or locked: your NFTs stay in your wallet.</p>
+          <div id="daoInfo" class="item">Loading…</div>
+          <div id="proposalList"></div>
+        </section>
+        <section id="newProposalBox" hidden>
+          <h2 class="wintitle">NEW PROPOSAL</h2>
+          <div class="item">
+            <label for="npTitle">Title (4–100 characters)</label>
+            <input id="npTitle" maxlength="100" placeholder="e.g. Theme for Season 3">
+            <label for="npDesc">Details (4–2,500 characters)</label>
+            <textarea id="npDesc" rows="4" maxlength="2500"></textarea>
+            <label for="npType">Type</label>
+            <select id="npType"><option value="4">Yes / No / Abstain</option><option value="0">Multiple choice</option></select>
+            <div id="npOptionsRow" hidden>
+              <label for="npOptions">Options, one per line</label>
+              <textarea id="npOptions" rows="4" placeholder="Pixelz&#10;Doodlez&#10;Both"></textarea>
+            </div>
+            <p class="info" id="npFee"></p>
+            <button id="npSubmit">SUBMIT PROPOSAL</button>
+            <div class="result" id="npResult" hidden></div>
+          </div>
+        </section>
+      </div>
+
+      <!-- ===================== FARMS PAGE ===================== -->
+      <div class="page" id="page-farms" hidden>
+        <section>
+          <h2 class="wintitle">$SQUISH FARMS</h2>
+          <p class="info">Stake your SquishEyez NFTs to earn $SQUISH. Some farms hold your NFTs while they're staked (with a short lock); others leave them in your wallet. Claim your rewards any time.</p>
+          <div id="farmList"><div class="item">Loading farms…</div></div>
+        </section>
+      </div>
+
+      <!-- ===================== INVENTORY PAGE ===================== -->
+      <div class="page" id="page-inventory" hidden>
+        <section>
+          <h2 class="wintitle">INVENTORY</h2>
+          <div id="balances" class="balances">Connect your wallet to see your inventory.</div>
+          <div class="inv-controls">
+            <select id="invSchema"><option value="">All types</option></select>
+            <button id="invRefresh" class="small">REFRESH</button>
+          </div>
+          <div id="invSummary" class="info"></div>
+          <div id="invGrid" class="grid"></div>
+        </section>
+      </div>
+
+      <!-- ===================== DROPS PAGE ===================== -->
+      <div class="page" id="page-drops" hidden>
+        <section>
+          <h2 class="wintitle">DROPS</h2>
+          <p class="info">Every SquishEyez drop from NeftyBlocks and NFTHive. Buying here goes straight to the drop contracts, so it still works now that those websites are gone.</p>
+          <div class="inv-controls">
+            <select id="dropPlatform"><option value="">All platforms</option><option value="nefty">NeftyBlocks</option><option value="hive">NFTHive</option></select>
+            <select id="dropStatus"><option value="open">Live + upcoming</option><option value="live">Live</option><option value="ended">Ended</option><option value="sold out">Sold out</option><option value="all">All drops</option></select>
+            <button id="dropRefresh" class="small">REFRESH</button>
+          </div>
+          <div id="dropSummary" class="info"></div>
+          <div id="dropLeftovers" class="item" hidden></div>
+          <div id="dropList"></div>
+        </section>
+      </div>
+
+      <!-- ===================== HUB PAGE ===================== -->
+      <div class="page" id="page-hub">
+
+      <!-- WRAP / UNWRAP -->
+      <section id="wrapunwrap">
+        <h2 class="wintitle">$SQUISH WRAP / UNWRAP</h2>
+        <div class="item" id="blends">Loading blends…</div>
+      </section>
+
+      <!-- SEASON 2 FUSION (NeftyBlocks blends) -->
+      <section id="fusion">
+        <h2 class="wintitle">SEASON 2 SHARDZ FUSION</h2>
+        <div class="item">
+          <p class="info">Combine a Top Shard and a Bottom Shard (same Piece and Style) with a Blend Diskette to make a completed Squisheye². Recipes you can make right now are marked READY.</p>
+          <div id="fusionList" class="info">Loading recipes…</div>
+          <div id="fusionResult" class="result" hidden></div>
+        </div>
+      </section>
+
+      <!-- PACK OPENING -->
+      <section id="packs">
+        <h2 class="wintitle">OPEN PACKS</h2>
+        <div class="item">
+          <label for="packSelect">Your packs</label><br>
+          <select id="packSelect"><option value="">Connect wallet to list your packs</option></select>
+          <label for="packInput">Or enter a pack ID (this also finishes a pack you started opening earlier)</label><br>
+          <input type="text" id="packInput" inputmode="numeric" placeholder="Pack asset ID">
+          <button id="openPackBtn" style="margin-top:12px;">OPEN PACK</button>
+          <div id="packResult" class="result" hidden></div>
+          <div id="packRamWarn" class="result error" hidden></div>
+        </div>
+      </section>
+
+
+      </div>
+
+      <footer>&copy; 2026 Next Door Media (UK) &bull; SquishHub &bull; type HELP below</footer>
+  </div>
+
+  <div class="statusbar">
+    <div class="out" id="cmdOut">Ready. Type HELP for commands, or use F1–F6.</div>
+    <form id="cmdForm" autocomplete="off"><label class="ps1" for="cmd" id="ps1">C:\SQUISH\HUB&gt;</label><input id="cmd" spellcheck="false" autocapitalize="off" aria-label="Command"></form>
+  </div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
