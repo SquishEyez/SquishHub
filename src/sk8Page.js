@@ -1,12 +1,12 @@
 // SK8 page: the SquishEyez × Sk8Coin collab. Collab parts, the live drops
 // that sell them, the skateboard recipes, and the wallet's collab items.
 import { SK8 } from './config.js'
-import { templateData } from './chain.js'
+import { templateData, getCurrencyBalance } from './chain.js'
 import * as wallet from './wallet.js'
 import * as drops from './drops.js'
 import * as nb from './neftyblends.js'
 import { dropCard, bindDropClaims } from './dropsPage.js'
-import { $, esc, txLink, show, busy, imgTag } from './ui.js'
+import { $, esc, txLink, show, busy, imgTag, fmtQty } from './ui.js'
 
 let boards = []
 let owned
@@ -17,7 +17,23 @@ const partName = (template, fallback) => PART_NAMES.get(Number(template)) || fal
 
 export async function refreshSk8() {
   owned = wallet.getSession() ? await nb.ownedByTemplate(SK8.collection).catch(() => undefined) : undefined
-  await Promise.all([renderParts(), renderDrops(), renderBoards()])
+  await Promise.all([renderWallet(), renderParts(), renderDrops(), renderBoards()])
+}
+
+// ----------------------------------------------------------------- wallet
+
+async function renderWallet() {
+  const box = $('sk8Wallet')
+  const who = wallet.actor()
+  if (!who) { box.textContent = 'Connect your wallet to see your SKATE and parts.'; return }
+  const [skate, wax] = await Promise.all([
+    getCurrencyBalance(SK8.token.contract, who, SK8.token.symbol).catch(() => []),
+    getCurrencyBalance('eosio.token', who, 'WAX').catch(() => []),
+  ])
+  const count = (g) => SK8.parts.filter((p) => p.group === g).reduce((n, p) => n + ((owned?.get(p.template) || []).length), 0)
+  box.innerHTML = `
+    <div class="balances"><span>${esc(fmtQty(skate[0] || '0 SKATE'))}</span><span>${esc(fmtQty(wax[0] || '0 WAX'))}</span></div>
+    <div class="row"><small>Decks ${count('Deck')}</small><small>Wheels ${count('Wheels')}</small><small>Trucks ${count('Trucks')}</small><small>Bearings ${count('Bearings')}</small></div>`
 }
 
 // ------------------------------------------------------------------ parts
@@ -26,19 +42,23 @@ async function renderParts() {
   const box = $('sk8Parts')
   try {
     const parts = await Promise.all(SK8.parts.map(async (p) => ({ ...p, data: await templateData(SK8.collection, p.template) })))
-    box.innerHTML = parts.map((p) => {
+    const card = (p) => {
       const d = p.data
       const have = owned ? (owned.get(p.template) || []).length : undefined
-      const traits = ['rarity', 'speed', 'balance', 'pop'].filter((k) => d[k]).map((k) => `${k} ${d[k]}`).join(' · ')
+      // Bearing templates carry odd 'rarity' values ("Burn Token", "alpha"): show real rarities only.
+      const rarityOk = /^(common|uncommon|rare|epic|legendary)$/i.test(d.rarity || '')
+      const traits = ['rarity', 'speed', 'balance', 'pop'].filter((k) => d[k] && (k !== 'rarity' || rarityOk)).map((k) => `${k} ${d[k]}`).join(' · ')
       return `
       <div class="card">
         ${imgTag(d.img, p.label)}
         <div class="name">${esc(p.label)}</div>
         <div><small>${esc(traits)}</small></div>
-        <div><small>${d._max ? `${d._issued.toLocaleString('en-GB')} of ${d._max.toLocaleString('en-GB')} made` : ''}</small></div>
+        <div><small>${d._max ? `${d._issued.toLocaleString('en-GB')} of ${d._max.toLocaleString('en-GB')} made` : d._issued ? `${d._issued.toLocaleString('en-GB')} made` : ''}</small></div>
         ${have !== undefined ? `<div class="tags"><span class="tag ${have ? 'ready' : ''}">you have ${have}</span></div>` : ''}
       </div>`
-    }).join('')
+    }
+    const groups = [...new Set(SK8.parts.map((p) => p.group))]
+    box.innerHTML = groups.map((g) => `<h4>${esc(g)}</h4><div class="grid">${parts.filter((p) => p.group === g).map(card).join('')}</div>`).join('')
   } catch (err) {
     box.textContent = `Couldn't load the parts: ${wallet.errorMessage(err)}`
   }
@@ -49,13 +69,19 @@ async function renderParts() {
 async function renderDrops() {
   const box = $('sk8Drops')
   try {
-    const list = (await drops.loadDropsByIds('nefty', SK8.dropIds)).filter((d) => d.status === 'live')
+    const loaded = (await Promise.all(Object.entries(SK8.drops).map(([platform, ids]) => drops.loadDropsByIds(platform, ids)))).flat()
+    const list = loaded.filter((d) => d.status === 'live' && !d.authRequired)
     await Promise.all(list.map(async (d) => {
       d.image = (await templateData(SK8.collection, d.templates[0])).img || ''
       d.name = partName(d.templates[0], d.name)
     }))
     const access = await Promise.all(list.map((d) => drops.readAccess(d).catch(() => ({ kind: 'public' }))))
-    box.innerHTML = list.map((d, i) => dropCard(d, access[i])).join('') || '<div class="item">No collab parts are on sale right now.</div>'
+    const groupOf = (d) => SK8.parts.find((p) => p.template === Number(d.templates[0]))?.group || 'Other'
+    const groups = [...new Set(SK8.parts.map((p) => p.group)), 'Other']
+    box.innerHTML = groups.map((g) => {
+      const items = list.map((d, i) => [d, access[i]]).filter(([d]) => groupOf(d) === g)
+      return items.length ? `<h4>${esc(g)}</h4>${items.map(([d, a]) => dropCard(d, a)).join('')}` : ''
+    }).join('') || '<div class="item">No collab parts are on sale right now.</div>'
   } catch (err) {
     box.textContent = `Couldn't load the drops: ${wallet.errorMessage(err)}`
   }

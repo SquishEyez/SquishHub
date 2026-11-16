@@ -72,19 +72,33 @@ export const DAO_NAME = 'squishdao'
 // NFT schemas whose holders vote, one vote per NFT.
 export const DAO_SCHEMAS = ['squisheyezs1', 'squisheyezs2']
 
-// SquishEyez × Sk8Coin collab (collection `skatecoinwax` on WAX). The
-// SquishEyez Deck and Wheels are parts for a complete SquishEyez skateboard,
-// crafted on NeftyBlocks blends with Sk8Coin trucks and SKATE token bearings.
+// SquishEyez × Sk8Coin collab (collection `skatecoinwax` on WAX). A complete
+// SquishEyez skateboard is crafted on NeftyBlocks blends from a SquishEyez
+// Deck, Sk8Coin trucks, SquishEyez Wheels and SKATE Token NFTs (the bearings).
 export const SK8 = {
   collection: 'skatecoinwax',
   site: 'https://www.sk8coin.io/',
+  // The fungible SKATE token (also pays for bearings).
+  token: { contract: 'skatecoinwax', symbol: 'SKATE' },
   parts: [
-    { template: 793820, label: 'SquishEyez Deck' },
-    { template: 793909, label: 'SquishEyez Wheels (pink)' },
-    { template: 793908, label: 'SquishEyez Wheels (white)' },
+    { template: 793820, group: 'Deck', label: 'SquishEyez Deck' },
+    { template: 793909, group: 'Wheels', label: 'SquishEyez Wheels (pink)' },
+    { template: 793908, group: 'Wheels', label: 'SquishEyez Wheels (white)' },
+    { template: 784374, group: 'Trucks', label: 'Gold Trucks' },
+    { template: 749378, group: 'Trucks', label: 'Black Trucks' },
+    { template: 749388, group: 'Trucks', label: 'Red Trucks' },
+    { template: 741145, group: 'Trucks', label: 'Silver Trucks' },
+    { template: 121256, group: 'Bearings', label: 'Yellow Bearing (SKATE WAXP Token)' },
+    { template: 120638, group: 'Bearings', label: 'Blue Bearing (25 SKATE)' },
+    { template: 120626, group: 'Bearings', label: 'Green Bearing (10 SKATE)' },
+    { template: 120614, group: 'Bearings', label: 'Red Bearing (1 SKATE)' },
   ],
-  // Live NeftyBlocks drops selling the parts (from pre-made stock).
-  dropIds: [218085, 228566, 218115, 228564, 218116, 228565],
+  // Live public drops selling the parts. (Yellow bearing drop 206021 is left
+  // out: AtomicAssets refuses it, "Native backing has been deprecated".)
+  drops: {
+    nefty: [218085, 228566, 218115, 228564, 218116, 228565, 202867, 202868, 214417, 228024, 201080, 201154, 201281],
+    hive: [5586],
+  },
   // NeftyBlocks blends that build a SquishEyez skateboard.
   blendIds: [39764, 39765, 39766, 39767, 39768, 39771, 39772],
 }

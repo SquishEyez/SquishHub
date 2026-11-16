@@ -280,7 +280,10 @@ export async function buildClaim(drop, { amount = 1, price = drop.price, access,
   const currency = free ? '0,NULL' : symbolOf(price)
   if (!free) {
     if (drop.platform === 'nefty') {
-      out.push(act(platform.contract, 'assertprice', { drop_id: drop.id, listing_price: price, settlement_symbol: drop.settlement }))
+      // The price lock names the currency actually paid: an alternative price
+      // (e.g. WAX instead of SKATE) is refused with the drop's main currency.
+      const settlement = price === drop.price ? drop.settlement : symbolOf(price)
+      out.push(act(platform.contract, 'assertprice', { drop_id: drop.id, listing_price: price, settlement_symbol: settlement }))
     }
     const contract = await tokenContract(platform, currency.split(',')[1])
     out.push(act(contract, 'transfer', { from: claimer, to: platform.contract, quantity: multiply(price, amount), memo: 'deposit' }))

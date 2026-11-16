@@ -22,7 +22,7 @@ the contracts check each one against the wallet that signs it.
 | **F3 Farms** | Stake, unstake and claim $SQUISH on the SquishEyez farms |
 | **F4 Vote** | SquishDAO: one vote per OG / Season 2 SquishEyez, nothing staked; results and proposals |
 | **F5 Bag** | Your $SQUISH, WAX and SquishEyez NFTs, tagged with what each is good for |
-| **F6 Sk8** | The SquishEyez × [Sk8Coin](https://www.sk8coin.io/) collab: buy the SquishEyez Deck and Wheels, and build a complete SquishEyez skateboard |
+| **F6 Sk8** | The SquishEyez × [Sk8Coin](https://www.sk8coin.io/) collab: your SKATE balance, every part (deck, wheels, trucks, bearings) with its live drops, and building a complete SquishEyez skateboard |
 
 Every page shows the **$SQUISH** window: supply against the 963,369 cap, what
 is left to mint, what sits in farm reward pools, and the holder count.
