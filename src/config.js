@@ -71,3 +71,20 @@ export const APP_RETURN_URL = 'squishhub://signed'
 export const DAO_NAME = 'squishdao'
 // NFT schemas whose holders vote, one vote per NFT.
 export const DAO_SCHEMAS = ['squisheyezs1', 'squisheyezs2']
+
+// SquishEyez × Sk8Coin collab (collection `skatecoinwax` on WAX). The
+// SquishEyez Deck and Wheels are parts for a complete SquishEyez skateboard,
+// crafted on NeftyBlocks blends with Sk8Coin trucks and SKATE token bearings.
+export const SK8 = {
+  collection: 'skatecoinwax',
+  site: 'https://www.sk8coin.io/',
+  parts: [
+    { template: 793820, label: 'SquishEyez Deck' },
+    { template: 793909, label: 'SquishEyez Wheels (pink)' },
+    { template: 793908, label: 'SquishEyez Wheels (white)' },
+  ],
+  // Live NeftyBlocks drops selling the parts (from pre-made stock).
+  dropIds: [218085, 228566, 218115, 228564, 218116, 228565],
+  // NeftyBlocks blends that build a SquishEyez skateboard.
+  blendIds: [39764, 39765, 39766, 39767, 39768, 39771, 39772],
+}

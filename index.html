@@ -113,6 +113,11 @@
     /* ===== Tags, thumbnails, grids ===== */
     .tag { display: inline-block; border: 1px solid var(--line); padding: 0 6px; font-size: 18px; margin: 2px 2px 0 0; }
     .tag.ready { background: var(--sel-bg); color: var(--sel-ink); text-shadow: none; }
+    .ings { display: flex; flex-wrap: wrap; gap: 8px; margin: 6px 0; }
+    .ing { display: flex; flex-direction: column; align-items: center; text-align: center; width: 78px; }
+    .ing small { line-height: 1.05; margin-top: 2px; }
+    .ing .ok { color: var(--hi); }
+    .ing .miss { color: var(--warn); }
     .tag.staked { border-color: #ffb000; color: #ffb000; }
     .token-chip { border: 1px solid var(--line); padding: 6px 10px; }
     .thumbs { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; margin-bottom: 6px; }
@@ -169,6 +174,7 @@
     <a href="#farms" data-page="farms"><span class="k">F3</span> Farms</a>
     <a href="#vote" data-page="vote"><span class="k">F4</span> Vote</a>
     <a href="#inventory" data-page="inventory"><span class="k">F5</span> Bag</a>
+    <a href="#sk8" data-page="sk8"><span class="k">F6</span> Sk8</a>
     <span class="spacer"></span>
     <button class="theme" id="themeBtn" type="button" title="Change colours">◐</button>
     <span class="clock" id="clock"></span>
@@ -196,6 +202,24 @@
         <h2 class="wintitle">$SQUISH</h2>
         <div id="squishStats">Reading the chain…</div>
       </section>
+
+      <!-- ===================== SK8 PAGE ===================== -->
+      <div class="page" id="page-sk8" hidden>
+        <section>
+          <h2 class="wintitle">SQUISHEYEZ × SK8COIN</h2>
+          <p class="info">SquishEyez teamed up with <a href="https://www.sk8coin.io/" target="_blank" rel="noopener">Sk8Coin</a>, the skateboarding collection on WAX, to make a SquishEyez skateboard. Collect the SquishEyez Deck and Wheels, add Sk8Coin trucks and SKATE token bearings, and build a complete SquishEyez board.</p>
+          <div id="sk8Parts" class="grid">Loading…</div>
+        </section>
+        <section>
+          <h2 class="wintitle">GET THE PARTS</h2>
+          <div id="sk8Drops">Loading…</div>
+        </section>
+        <section>
+          <h2 class="wintitle">BUILD A BOARD</h2>
+          <p class="info">Each recipe uses one SquishEyez Deck, two trucks, four wheels and eight SKATE tokens (the bearings). The parts are used up and the board is minted to you. Rare and uncommon boards are one of one.</p>
+          <div id="sk8Boards">Loading…</div>
+        </section>
+      </div>
 
       <!-- ===================== VOTE PAGE ===================== -->
       <div class="page" id="page-vote" hidden>

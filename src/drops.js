@@ -74,6 +74,7 @@ function decode(platform, r) {
   return {
     platform: platform.key,
     id: String(r.drop_id),
+    collection: r.collection_name,
     name: d.name || `Drop #${r.drop_id}`,
     description: d.description || '',
     image: d.image || d.img || '',
@@ -120,6 +121,13 @@ export async function loadDrops(platformKey, { includeTail = true } = {}) {
     .filter((r) => r.collection_name === COLLECTION && !seen.has(String(r.drop_id)) && seen.add(String(r.drop_id)))
     .map((r) => decode(platform, r))
     .sort((a, b) => Number(b.id) - Number(a.id))
+}
+
+/** Specific drops by ID (any collection), in the order given. */
+export async function loadDropsByIds(platformKey, ids) {
+  const platform = PLATFORMS[platformKey]
+  const rows = await Promise.all(ids.map((id) => readDropRow(platform, id).catch(() => undefined)))
+  return rows.filter(Boolean).map((r) => decode(platform, r))
 }
 
 export async function reloadDrop(drop) {

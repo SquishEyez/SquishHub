@@ -147,7 +147,7 @@ export function templateData(collection, id) {
   const key = `${collection}:${id}`
   if (!templates.has(key)) {
     templates.set(key, atomic(`/atomicassets/v1/templates/${collection}/${id}`)
-      .then((t) => ({ ...(t?.immutable_data || {}), schema: t?.schema?.schema_name }))
+      .then((t) => ({ ...(t?.immutable_data || {}), schema: t?.schema?.schema_name, _issued: Number(t?.issued_supply) || 0, _max: Number(t?.max_supply) || 0 }))
       .catch(() => ({})))
   }
   return templates.get(key)

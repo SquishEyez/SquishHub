@@ -25,7 +25,7 @@ export async function refreshDrops() {
     all = await loadAllDrops()
     // Drops rarely carry their own picture: show the NFT they mint.
     await Promise.all(all.filter((d) => !d.image && d.templates[0]).map(async (d) => {
-      d.image = (await templateData(COLLECTION, d.templates[0])).img || ''
+      d.image = (await templateData(d.collection || COLLECTION, d.templates[0])).img || ''
     }))
     accessCache.clear()
     await render()
@@ -46,11 +46,12 @@ async function render() {
     if (!accessCache.has(key)) accessCache.set(key, drops.readAccess(d).catch(() => ({ kind: 'public' })))
     return accessCache.get(key)
   }))
-  $('dropList').innerHTML = shown.map((d, i) => card(d, access[i])).join('') ||
+  $('dropList').innerHTML = shown.map((d, i) => dropCard(d, access[i])).join('') ||
     '<div class="item">No drops to show here. Choose "All drops" to see past ones.</div>'
 }
 
-function card(d, access) {
+/** One drop with its BUY / CLAIM button (pair with bindDropClaims). */
+export function dropCard(d, access) {
   const p = drops.PLATFORMS[d.platform]
   const live = d.status === 'live'
   return `
@@ -81,14 +82,17 @@ function card(d, access) {
   </div>`
 }
 
-$('dropList').addEventListener('click', (e) => {
+/** Wires the BUY / CLAIM buttons of drop cards inside `container`. */
+export function bindDropClaims(container) {
+  container.addEventListener('click', (e) => {
   const btn = e.target.closest('button[data-act="claim"]')
   if (!btn) return
   const el = btn.closest('.drop')
   const [platform, id] = el.dataset.key.split(':')
   const out = el.querySelector('.result')
   busy(btn, out, async () => {
-    const d = (await drops.reloadDrop({ platform, id })) || all.find((x) => x.platform === platform && x.id === id)
+    const d = await drops.reloadDrop({ platform, id })
+    if (!d) throw new Error('This drop no longer exists.')
     if (d.status !== 'live') throw new Error(`This drop has ${d.status === 'upcoming' ? 'not started yet' : d.status === 'sold out' ? 'sold out' : 'ended'}.`)
     const amount = Math.max(1, Math.floor(Number(el.querySelector('.qty').value) || 1))
     if (d.remaining < amount) throw new Error(`Only ${d.remaining} left.`)
@@ -116,7 +120,10 @@ $('dropList').addEventListener('click', (e) => {
     const tx = await wallet.transact(await drops.buildClaim(d, { amount, price, access, proofIds }))
     show(out, `✅ Done! Your NFT${amount > 1 ? 's' : ''} will arrive in your wallet shortly. ${txLink(tx)}`, 'ok')
   })
-})
+  })
+}
+
+bindDropClaims($('dropList'))
 
 $('dropPlatform').addEventListener('change', render)
 $('dropStatus').addEventListener('change', render)

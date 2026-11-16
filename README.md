@@ -22,6 +22,7 @@ the contracts check each one against the wallet that signs it.
 | **F3 Farms** | Stake, unstake and claim $SQUISH on the SquishEyez farms |
 | **F4 Vote** | SquishDAO: one vote per OG / Season 2 SquishEyez, nothing staked; results and proposals |
 | **F5 Bag** | Your $SQUISH, WAX and SquishEyez NFTs, tagged with what each is good for |
+| **F6 Sk8** | The SquishEyez × [Sk8Coin](https://www.sk8coin.io/) collab: buy the SquishEyez Deck and Wheels, and build a complete SquishEyez skateboard |
 
 Every page shows the **$SQUISH** window: supply against the 963,369 cap, what
 is left to mint, what sits in farm reward pools, and the holder count.
@@ -31,8 +32,8 @@ Wallets: **Anchor** (Android app via deep link, or desktop) and **WAX Cloud Wall
 ## Command prompt
 
 The status line is a working prompt: `HELP`, `HUB`, `DROPS`, `FARMS`, `VOTE`,
-`BAG`, `CD FARMS`, `CONNECT`, `CLOUD`, `LOGOUT`, `WHOAMI`,
-`THEME GREEN|AMBER|BLUE|GREY`, `VER`, `CLS`. F1–F5 switch pages.
+`BAG`, `SK8`, `CD FARMS`, `CONNECT`, `CLOUD`, `LOGOUT`, `WHOAMI`,
+`THEME GREEN|AMBER|BLUE|GREY`, `VER`, `CLS`. F1–F6 switch pages.
 
 ## Develop
 
@@ -59,6 +60,7 @@ and publishes `dist/`.
 | `src/dao.js`, `src/votePage.js` | SquishDAO voting |
 | `src/token.js` | $SQUISH supply |
 | `src/inventoryPage.js` | Bag |
+| `src/sk8Page.js` | SquishEyez × Sk8Coin collab |
 | `src/dos.js`, `src/ui.js`, `index.html` | DOS shell, UI helpers, layout and themes |
 
 Every transaction the app builds was checked with `compute_transaction` on WAX

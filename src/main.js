@@ -10,15 +10,16 @@ import { refreshFarms } from './farmsPage.js'
 import { refreshInventory } from './inventoryPage.js'
 import { refreshDrops } from './dropsPage.js'
 import { refreshVote } from './votePage.js'
+import { refreshSk8 } from './sk8Page.js'
 import { setPrompt } from './dos.js'
 import { squishStats } from './token.js'
 
 
 // ==================== PAGES ====================
 
-const loaders = { drops: refreshDrops, farms: refreshFarms, vote: refreshVote, inventory: refreshInventory }
+const loaders = { drops: refreshDrops, farms: refreshFarms, vote: refreshVote, inventory: refreshInventory, sk8: refreshSk8 }
 
-const PAGES = ['hub', 'drops', 'farms', 'vote', 'inventory']
+const PAGES = ['hub', 'drops', 'farms', 'vote', 'inventory', 'sk8']
 const stale = new Set(Object.keys(loaders))
 
 function showPage() {

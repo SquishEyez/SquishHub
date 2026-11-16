@@ -77,7 +77,7 @@ setInterval(tick, 15000)
 
 // ------------------------------------------------------------- navigation
 
-const KEYS = { F1: 'hub', F2: 'drops', F3: 'farms', F4: 'vote', F5: 'inventory' }
+const KEYS = { F1: 'hub', F2: 'drops', F3: 'farms', F4: 'vote', F5: 'inventory', F6: 'sk8' }
 
 window.addEventListener('keydown', (e) => {
   const page = KEYS[e.key]
@@ -88,7 +88,7 @@ window.addEventListener('keydown', (e) => {
 
 /** Keeps the prompt in step with the page: C:\SQUISH\FARMS> */
 export function setPrompt(page) {
-  const names = { hub: 'HUB', drops: 'DROPS', farms: 'FARMS', vote: 'VOTE', inventory: 'BAG' }
+  const names = { hub: 'HUB', drops: 'DROPS', farms: 'FARMS', vote: 'VOTE', inventory: 'BAG', sk8: 'SK8' }
   $('ps1').textContent = `C:\\SQUISH\\${names[page] || 'HUB'}>`
 }
 
@@ -98,10 +98,10 @@ function say(text) {
   $('cmdOut').textContent = text
 }
 
-const PAGES = { hub: 'hub', drops: 'drops', drop: 'drops', farms: 'farms', farm: 'farms', vote: 'vote', dao: 'vote', bag: 'inventory', inv: 'inventory', inventory: 'inventory', dir: 'inventory' }
+const PAGES = { hub: 'hub', drops: 'drops', drop: 'drops', farms: 'farms', farm: 'farms', vote: 'vote', dao: 'vote', bag: 'inventory', inv: 'inventory', inventory: 'inventory', dir: 'inventory', sk8: 'sk8', skate: 'sk8', sk8coin: 'sk8', board: 'sk8' }
 
 const COMMANDS = {
-  help: () => say('HUB DROPS FARMS VOTE BAG · CONNECT · CLOUD · LOGOUT · THEME [GREEN|AMBER|BLUE|GREY] · VER · CLS'),
+  help: () => say('HUB DROPS FARMS VOTE BAG SK8 · CONNECT · CLOUD · LOGOUT · THEME [GREEN|AMBER|BLUE|GREY] · VER · CLS'),
   ver: () => say(`SquishHub v${__VERSION__} · SquishEyez on WAX · (C) 2026 Next Door Media (UK)`),
   cls: () => { window.scrollTo({ top: 0 }); say('') },
   theme: (arg) => say(`Colour scheme: ${setTheme((arg || '').toLowerCase()).toUpperCase()}`),
