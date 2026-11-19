@@ -27,6 +27,26 @@ npm run android:build
 # APK: android/app/build/outputs/apk/debug/app-debug.apk
 ```
 
-`npm run android:open` opens the project in Android Studio. To publish on
-Google Play, make a release bundle signed with your own upload key:
-Android Studio → Build → Generate Signed App Bundle.
+`npm run android:open` opens the project in Android Studio.
+
+## Release builds
+
+Releases are signed with the SquishHub release key, which is **never** kept
+in this repository. Create `android/keystore.properties` (ignored by git):
+
+```properties
+storeFile=/path/to/squishhub-release.jks
+storePassword=...
+keyAlias=squishhub
+keyPassword=...
+```
+
+Then:
+
+```bash
+npm run android:release
+# APK: android/app/build/outputs/apk/release/app-release.apk
+```
+
+Every release must be signed with the same key, or Android refuses to update
+an installed copy. Without `keystore.properties` the release APK is unsigned.

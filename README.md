@@ -7,8 +7,10 @@ C:\SQUISH> HUB.EXE
 The all-in-one hub for the **SquishEyez** NFT collection
 ([`ssquisheyezz`](https://wax.atomichub.io/explorer/collection/wax-mainnet/ssquisheyezz) on WAX)
 and its token, **$SQUISH**. It talks straight to the WAX smart contracts, so it
-keeps working without the NeftyBlocks, NFTHive or WaxDAO websites. Runs as a
-website and as an Android app, with a DOS look.
+keeps working without the NeftyBlocks, NFTHive or WaxDAO websites. Runs on
+Android, on Linux and as a website, with a DOS look.
+
+**[⬇ Download the latest release](../../releases/latest)**
 
 Every action is something a holder does with **their own** NFTs and tokens:
 the contracts check each one against the wallet that signs it.
@@ -29,6 +31,31 @@ is left to mint, what sits in farm reward pools, and the holder count.
 
 Wallets: **Anchor** (Android app via deep link, or desktop) and **WAX Cloud Wallet**.
 
+## Install
+
+| Platform | File | How |
+|---|---|---|
+| **Android** 7.0+ | `squishhub-<version>.apk` | Open it on your phone and allow the install if Android asks |
+| **Ubuntu / Debian / Mint** | `squishhub-<version>-amd64.deb` | `sudo apt install ./squishhub-<version>-amd64.deb` |
+| **Any Linux** | `squishhub-<version>-x86_64.AppImage` | `chmod +x squishhub-*.AppImage && ./squishhub-*.AppImage` |
+
+Get the files from the [Releases page](../../releases/latest) and check them
+against `SHA256SUMS.txt`:
+
+```bash
+sha256sum -c SHA256SUMS.txt --ignore-missing
+```
+
+On Ubuntu 24.04 and newer the AppImage may close straight away, because Ubuntu
+restricts the sandbox that Chromium-based apps use. Install the `.deb` instead:
+it sets the sandbox up properly.
+
+To sign in on Linux with Anchor, install the [Anchor desktop
+app](https://anchorwallet.io/download), or scan the QR code with Anchor on your
+phone.
+
+How to check that an APK is genuine: [SECURITY.md](SECURITY.md).
+
 ## Command prompt
 
 The status line is a working prompt: `HELP`, `HUB`, `DROPS`, `FARMS`, `VOTE`,
@@ -41,7 +68,9 @@ The status line is a working prompt: `HELP`, `HUB`, `DROPS`, `FARMS`, `VOTE`,
 npm install
 npm run dev            # http://localhost:5173
 npm run build          # website -> dist/
-npm run android:build  # Android APK (see ANDROID.md)
+npm run android:build  # Android APK, debug (see ANDROID.md)
+npm run android:release # Android APK, signed with your release key
+npm run desktop:build  # Linux AppImage + .deb -> desktop/release/
 ```
 
 **Netlify:** connect the repository; `netlify.toml` builds with `npm run build`
@@ -62,8 +91,15 @@ and publishes `dist/`.
 | `src/inventoryPage.js` | Bag |
 | `src/sk8Page.js` | SquishEyez × Sk8Coin collab |
 | `src/dos.js`, `src/ui.js`, `index.html` | DOS shell, UI helpers, layout and themes |
+| `android/` | Android app (Capacitor) |
+| `desktop/` | Linux app (Electron): a locked-down window around the same web app |
 
 Every transaction the app builds was checked with `compute_transaction` on WAX
 mainnet: the node runs it exactly as if signed, without signing or saving it.
+
+## Licence
+
+The code is MIT licensed (see [LICENSE](LICENSE)). The SquishEyez artwork, name
+and logo belong to the artist and are not covered by that licence.
 
 © 2026 Next Door Media (UK)

@@ -7,3 +7,12 @@ android/build/
 android/.gradle/
 android/capacitor-cordova-android-plugins/build/
 *.apk
+desktop/node_modules/
+desktop/web/
+desktop/release/
+*.jks
+*.keystore
+*.p12
+keystore.properties
+*.AppImage
+*.deb

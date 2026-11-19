@@ -1,0 +1,49 @@
+{
+  "name": "squishhub",
+  "productName": "SquishHub",
+  "version": "1.4.0",
+  "description": "SquishHub: the all-in-one hub for the SquishEyez NFT collection on WAX",
+  "homepage": "https://github.com/SquishEyez/SquishHub",
+  "license": "MIT",
+  "author": {
+    "name": "SquishEyez",
+    "email": "229008534+SquishEyez@users.noreply.github.com"
+  },
+  "main": "main.js",
+  "desktopName": "squishhub.desktop",
+  "private": true,
+  "scripts": {
+    "prepare-web": "node -e \"const fs=require('fs');fs.rmSync('web',{recursive:true,force:true});fs.cpSync('../dist','web',{recursive:true})\"",
+    "start": "npm run prepare-web && electron .",
+    "dist": "npm run prepare-web && electron-builder --linux AppImage deb --x64"
+  },
+  "devDependencies": {
+    "electron": "45.3.4",
+    "electron-builder": "26.18.0"
+  },
+  "build": {
+    "appId": "uk.nextdoormedia.squishhub",
+    "productName": "SquishHub",
+    "artifactName": "squishhub-${version}-${arch}.${ext}",
+    "files": [
+      "main.js",
+      "web/**",
+      "build/icon.png"
+    ],
+    "directories": {
+      "output": "release",
+      "buildResources": "build"
+    },
+    "linux": {
+      "category": "Network",
+      "icon": "build/icon.png",
+      "synopsis": "The all-in-one hub for the SquishEyez NFT collection on WAX",
+      "executableName": "squishhub",
+      "syncDesktopName": true
+    },
+    "deb": {
+      "packageCategory": "net"
+    },
+    "publish": null
+  }
+}
