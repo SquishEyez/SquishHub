@@ -82,12 +82,14 @@ export const SK8 = {
   token: { contract: 'skatecoinwax', symbol: 'SKATE' },
   parts: [
     { template: 793820, group: 'Deck', label: 'SquishEyez Deck' },
+    { template: 793913, group: 'Board', label: 'SquishEyez Board (common)' },
     { template: 793909, group: 'Wheels', label: 'SquishEyez Wheels (pink)' },
     { template: 793908, group: 'Wheels', label: 'SquishEyez Wheels (white)' },
     { template: 784374, group: 'Trucks', label: 'Gold Trucks' },
     { template: 749378, group: 'Trucks', label: 'Black Trucks' },
     { template: 749388, group: 'Trucks', label: 'Red Trucks' },
     { template: 741145, group: 'Trucks', label: 'Silver Trucks' },
+    { template: 854948, group: 'Trucks', label: 'Blue Trucks (epic)' },
     { template: 121256, group: 'Bearings', label: 'Yellow Bearing (SKATE WAXP Token)' },
     { template: 120638, group: 'Bearings', label: 'Blue Bearing (25 SKATE)' },
     { template: 120626, group: 'Bearings', label: 'Green Bearing (10 SKATE)' },
@@ -99,6 +101,7 @@ export const SK8 = {
     nefty: [218085, 228566, 218115, 228564, 218116, 228565, 202867, 202868, 214417, 228024, 201080, 201154, 201281],
     hive: [5586],
   },
-  // NeftyBlocks blends that build a SquishEyez skateboard.
-  blendIds: [39764, 39765, 39766, 39767, 39768, 39771, 39772],
+  // NeftyBlocks blends that make a SquishEyez skateboard: build one from a
+  // deck and parts, or upgrade a common SquishEyez board (Cruisers, epic).
+  blendIds: [39764, 39765, 39766, 39767, 39768, 39771, 39772, 39769, 39761, 39762, 39763],
 }

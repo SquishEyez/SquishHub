@@ -33,7 +33,7 @@ async function renderWallet() {
   const count = (g) => SK8.parts.filter((p) => p.group === g).reduce((n, p) => n + ((owned?.get(p.template) || []).length), 0)
   box.innerHTML = `
     <div class="balances"><span>${esc(fmtQty(skate[0] || '0 SKATE'))}</span><span>${esc(fmtQty(wax[0] || '0 WAX'))}</span></div>
-    <div class="row"><small>Decks ${count('Deck')}</small><small>Wheels ${count('Wheels')}</small><small>Trucks ${count('Trucks')}</small><small>Bearings ${count('Bearings')}</small></div>`
+    <div class="row"><small>Decks ${count('Deck')}</small><small>Common boards ${count('Board')}</small><small>Wheels ${count('Wheels')}</small><small>Trucks ${count('Trucks')}</small><small>Bearings ${count('Bearings')}</small></div>`
 }
 
 // ------------------------------------------------------------------ parts
@@ -94,8 +94,10 @@ async function renderBoards() {
   const box = $('sk8Boards')
   try {
     boards = await nb.loadNeftyBlends(SK8.blendIds, SK8.collection)
-    const order = { legendary: 0, rare: 1, uncommon: 2, common: 3 }
-    boards.sort((a, b) => (order[a.resultData?.rarity] ?? 3) - (order[b.resultData?.rarity] ?? 3))
+    // Boards that can still be made first, then by rarity.
+    const order = { legendary: 0, epic: 1, rare: 2, uncommon: 3, common: 4 }
+    const rank = (b) => (b.status === 'active' ? 0 : 10) + (order[b.resultData?.rarity] ?? 4)
+    boards.sort((a, b) => rank(a) - rank(b))
     box.innerHTML = boards.map(boardCard).join('')
   } catch (err) {
     box.textContent = `Couldn't load the recipes: ${wallet.errorMessage(err)}`
@@ -110,6 +112,13 @@ function boardCard(b) {
   const traits = ['trucks', 'wheels', 'bearings', 'speed', 'balance', 'pop'].filter((k) => r[k]).map((k) => `${k} ${r[k]}`).join(' · ')
   const left = b.status === 'active' && b.max ? `${Math.max(0, b.max - b.used)} of ${b.max} left` : ''
   const tag = b.status !== 'active' ? b.status.toUpperCase() : !owned ? '' : ready ? 'READY' : 'missing parts'
+  // NeftyBlocks still shows such a recipe as open, but the board's template is
+  // capped and full, so WAX refuses to mint another ("maxsupply reached").
+  const usedUp = b.max > 0 && b.used >= b.max
+  const why = b.status === 'already made'
+    ? (r._max === 1 ? 'This board is one of one and it already exists.' : `All ${r._max} of this board have been made.`)
+      + (usedUp ? '' : ' The recipe still shows as open, but WAX won\'t make another.')
+    : b.status === 'sold out' ? `This recipe has been used all ${b.max} time${b.max === 1 ? '' : 's'} it allows.` : ''
   const ings = b.ingredients.map((i) => {
     const have = owned ? (owned.get(i.template_id) || []).length : undefined
     return `<div class="ing">${imgTag(i.image, i.label, 'thumb')}<small>${i.amount} × ${esc(partName(i.template_id, (i.label || '').replace(/ \(.*\)$/, '')))}${have !== undefined ? `<br><span class="${have >= i.amount ? 'ok' : 'miss'}">have ${have}</span>` : ''}</small></div>`
@@ -125,6 +134,7 @@ function boardCard(b) {
         <div><small>${esc(traits || (b.pool ? 'a ready-made board drawn from the pool' : ''))}${left ? ` · ${esc(left)}` : ''}</small></div>
       </div>
     </div>
+    ${why ? `<p class="info"><small>${esc(why)}</small></p>` : ''}
     <div class="ings">${ings}</div>
     ${b.status === 'active' && b.supported ? `<button data-build="${esc(b.id)}" ${ready || !owned ? '' : 'disabled'}>Build this board</button>` : ''}
     <div class="result" hidden></div>
